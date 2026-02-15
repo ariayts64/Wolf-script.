@@ -1,4 +1,4 @@
---[[ WolfGod fling ]]
+--[[ WolfGod fling with DisplayName Search ]]
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -12,7 +12,7 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 380) -- 
+MainFrame.Size = UDim2.new(0, 300, 0, 380) 
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
@@ -49,14 +49,14 @@ CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.TextSize = 18
 CloseButton.Parent = TitleBar
 
--- Search Bar (Added Section)
+-- Search Bar
 local SearchBar = Instance.new("TextBox")
 SearchBar.Name = "SearchBar"
 SearchBar.Size = UDim2.new(1, -20, 0, 25)
 SearchBar.Position = UDim2.new(0, 10, 0, 40)
 SearchBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 SearchBar.BorderSizePixel = 0
-SearchBar.PlaceholderText = "Search players..."
+SearchBar.PlaceholderText = "Search Name or Nickname..."
 SearchBar.Text = ""
 SearchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
 SearchBar.Font = Enum.Font.SourceSans
@@ -93,7 +93,7 @@ PlayerScrollFrame.ScrollBarThickness = 6
 PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 PlayerScrollFrame.Parent = SelectionFrame
 
--- Buttons (Adjusted Positions)
+-- Buttons
 local StartButton = Instance.new("TextButton")
 StartButton.Position = UDim2.new(0, 10, 0, 280)
 StartButton.Size = UDim2.new(0.5, -15, 0, 40)
@@ -132,12 +132,10 @@ DeselectAllButton.Parent = MainFrame
 
 -- Variables
 local SelectedTargets = {}
-local PlayerCheckboxes = {}
 local FlingActive = false
 getgenv().OldPos = nil
 getgenv().FPDH = workspace.FallenPartsDestroyHeight
 
--- Function to update status
 local function CountSelectedTargets()
     local count = 0
     for _ in pairs(SelectedTargets) do count = count + 1 end
@@ -155,21 +153,23 @@ local function UpdateStatus()
     end
 end
 
--- Refresh Player List Function (With Search Support)
+-- Refresh Player List with DisplayName Search Support
 local function RefreshPlayerList()
     for _, child in pairs(PlayerScrollFrame:GetChildren()) do
         child:Destroy()
     end
-    PlayerCheckboxes = {}
 
     local searchText = SearchBar.Text:lower()
     local PlayerList = Players:GetPlayers()
-    table.sort(PlayerList, function(a, b) return a.Name:lower() < b.Name:lower() end)
+    table.sort(PlayerList, function(a, b) return a.DisplayName:lower() < b.DisplayName:lower() end)
 
     local yPosition = 5
     for _, player in ipairs(PlayerList) do
-        -- Filter: don't show self AND check if name matches search
-        if player ~= Player and (player.Name:lower():find(searchText) or player.DisplayName:lower():find(searchText)) then
+        -- Check both Name and DisplayName
+        local nameMatch = player.Name:lower():find(searchText)
+        local displayMatch = player.DisplayName:lower():find(searchText)
+
+        if player ~= Player and (nameMatch or displayMatch) then
             local PlayerEntry = Instance.new("Frame")
             PlayerEntry.Size = UDim2.new(1, -10, 0, 30)
             PlayerEntry.Position = UDim2.new(0, 5, 0, yPosition)
@@ -196,7 +196,8 @@ local function RefreshPlayerList()
             NameLabel.Size = UDim2.new(1, -35, 1, 0)
             NameLabel.Position = UDim2.new(0, 30, 0, 0)
             NameLabel.BackgroundTransparency = 1
-            NameLabel.Text = player.Name
+            -- Shows DisplayName and Username in parenthesis
+            NameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
             NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
             NameLabel.TextXAlignment = Enum.TextXAlignment.Left
             NameLabel.Parent = PlayerEntry
@@ -219,17 +220,14 @@ local function RefreshPlayerList()
                 UpdateStatus()
             end)
 
-            PlayerCheckboxes[player.Name] = { Entry = PlayerEntry, Checkmark = Checkmark }
             yPosition = yPosition + 35
         end
     end
     PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPosition + 5)
 end
 
--- Search bar event
 SearchBar:GetPropertyChangedSignal("Text"):Connect(RefreshPlayerList)
 
--- [Rest of the Fling Logic and Connections - Kept Original]
 local function ToggleAllPlayers(select)
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= Player then
@@ -240,7 +238,7 @@ local function ToggleAllPlayers(select)
             end
         end
     end
-    RefreshPlayerList() -- Re-render to show checkmarks
+    RefreshPlayerList()
     UpdateStatus()
 end
 
@@ -263,7 +261,7 @@ local function SkidFling(TargetPlayer)
     
     if Character and Humanoid and RootPart then
         if RootPart.Velocity.Magnitude < 50 then getgenv().OldPos = RootPart.CFrame end
-        if THumanoid and THumanoid.Sit then return Message("Error", TargetPlayer.Name .. " is sitting", 2) end
+        if THumanoid and THumanoid.Sit then return Message("Error", TargetPlayer.DisplayName .. " is sitting", 2) end
         if THead then workspace.CurrentCamera.CameraSubject = THead elseif Handle then workspace.CurrentCamera.CameraSubject = Handle elseif THumanoid and TRootPart then workspace.CurrentCamera.CameraSubject = THumanoid end
         if not TCharacter:FindFirstChildWhichIsA("BasePart") then return end
         
@@ -323,17 +321,17 @@ local function StartFling()
     if count == 0 then StatusLabel.Text = "No targets selected!"; wait(1); UpdateStatus(); return end
     FlingActive = true
     UpdateStatus()
-    spawn(function()
+    task.spawn(function()
         while FlingActive do
             for name, player in pairs(SelectedTargets) do
                 if player and player.Parent and FlingActive then
                     SkidFling(player)
-                    wait(0.1)
+                    task.wait(0.1)
                 else
                     SelectedTargets[name] = nil
                 end
             end
-            wait(0.5)
+            task.wait(0.5)
         end
     end)
 end
@@ -343,7 +341,6 @@ local function StopFling()
     UpdateStatus()
 end
 
--- Setup Connections
 StartButton.MouseButton1Click:Connect(StartFling)
 StopButton.MouseButton1Click:Connect(StopFling)
 SelectAllButton.MouseButton1Click:Connect(function() ToggleAllPlayers(true) end)
@@ -357,7 +354,6 @@ Players.PlayerRemoving:Connect(function(player)
     UpdateStatus()
 end)
 
--- Initialize
 RefreshPlayerList()
 UpdateStatus()
-Message("Loaded", "WolfGod Fling with Search enabled!", 3)
+Message("WolfGod", "Fling script with DisplayName search loaded!", 3)
