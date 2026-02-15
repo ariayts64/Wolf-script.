@@ -1,4 +1,4 @@
--- WolfGod ULTRA UI +
+-- WolfGod ULTRA UI
 -- Creator: WolfGod
 
 repeat task.wait() until game:IsLoaded()
@@ -11,13 +11,11 @@ local TeleportService = game:GetService("TeleportService")
 local LP = Players.LocalPlayer
 local Cam = workspace.CurrentCamera
 
--- GUI Setup
 local gui = Instance.new("ScreenGui")
 gui.Name = "WolfGod_ULTRA_UI"
 gui.ResetOnSpawn = false
 gui.Parent = LP:WaitForChild("PlayerGui")
 
--- Main Frame
 local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0,340,0,320)
 main.Position = UDim2.new(0.5,0,0.5,0)
@@ -29,7 +27,6 @@ main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
 
--- Floating Button
 local float = Instance.new("TextButton", gui)
 float.Size = UDim2.new(0,32,0,32)
 float.Position = UDim2.new(0,10,0.5,-16)
@@ -45,7 +42,6 @@ float.MouseButton1Click:Connect(function()
 	main.Visible = not main.Visible
 end)
 
--- Title
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1,-20,0,28)
 title.Position = UDim2.new(0,10,0,6)
@@ -54,7 +50,6 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 15
 title.BackgroundTransparency = 1
 
--- Footer (Credit RGB)
 local credit = Instance.new("TextLabel", main)
 credit.Size = UDim2.new(1,0,0,18)
 credit.Position = UDim2.new(0,0,1,-20)
@@ -63,7 +58,6 @@ credit.Font = Enum.Font.GothamBold
 credit.TextSize = 11
 credit.BackgroundTransparency = 1
 
--- RGB Effect for Title and Credit
 task.spawn(function()
 	local h=0
 	while true do
@@ -75,7 +69,6 @@ task.spawn(function()
 	end
 end)
 
--- Pages Container
 local pages = Instance.new("Frame", main)
 pages.Size = UDim2.new(1,-20,1,-100)
 pages.Position = UDim2.new(0,10,0,70)
@@ -112,7 +105,6 @@ local function Btn(par, txt, x, y, func)
 	return b
 end
 
--- === PLAYER PAGE ===
 Btn(p1,"Speed +",10,10,function() LP.Character.Humanoid.WalkSpeed+=5 end)
 Btn(p1,"Speed -",185,10,function() LP.Character.Humanoid.WalkSpeed-=5 end)
 Btn(p1,"Jump +",10,46,function() LP.Character.Humanoid.JumpPower+=10 end)
@@ -160,10 +152,9 @@ flyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- === TARGET PAGE ===
 local search = Instance.new("TextBox", p2)
 search.Size = UDim2.new(1, -4, 0, 26); search.Position = UDim2.new(0, 2, 0, 0)
-search.PlaceholderText = "Search Player..."; search.TextColor3 = Color3.new(1, 1, 1)
+search.PlaceholderText = "Search Name or DisplayName..."; search.TextColor3 = Color3.new(1, 1, 1)
 search.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Instance.new("UICorner", search).CornerRadius = UDim.new(0, 6)
 
 local scroll = Instance.new("ScrollingFrame", p2)
@@ -177,22 +168,35 @@ local function RefreshList()
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LP then
             local b = Instance.new("TextButton", scroll)
-            b.Size = UDim2.new(1, -6, 0, 26); b.Text = plr.Name; b.TextColor3 = Color3.new(1, 1, 1)
-            b.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-            b.MouseButton1Click:Connect(function() Target = plr; title.Text = "TARGET: " .. plr.Name end)
+            b.Size = UDim2.new(1, -6, 0, 26); b.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"; b.Name = plr.Name
+            b.TextColor3 = Color3.new(1, 1, 1); b.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+            b.MouseButton1Click:Connect(function() Target = plr; title.Text = "TARGET: " .. plr.DisplayName end)
         end
     end
 end
 RefreshList()
 Players.PlayerAdded:Connect(RefreshList); Players.PlayerRemoving:Connect(RefreshList)
+
 search:GetPropertyChangedSignal("Text"):Connect(function()
     local t = search.Text:lower()
-    for _,v in ipairs(scroll:GetChildren()) do if v:IsA("TextButton") then v.Visible = v.Text:lower():find(t) and true or false end end
+    for _, v in ipairs(scroll:GetChildren()) do
+        if v:IsA("TextButton") then
+            local plr = Players:FindFirstChild(v.Name)
+            if plr then
+                if plr.Name:lower():find(t) or plr.DisplayName:lower():find(t) then
+                    v.Visible = true
+                else
+                    v.Visible = false
+                end
+            end
+        end
+    end
 end)
 
--- === UTILITY PAGE ===
 local noclip = false; local headsit = false; local infJump = false
 UIS.JumpRequest:Connect(function() if infJump and LP.Character then LP.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end)
+
 RunService.Stepped:Connect(function()
     if LP.Character then
         if noclip then for _,v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide=false end end end
@@ -215,6 +219,21 @@ Btn(p3,"Teleport",185,46,function() if Target and Target.Character then LP.Chara
 Btn(p3,"Infinite Jump",10,82,function() infJump = not infJump end)
 Btn(p3,"Fling",185,82,function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ariayts64/Wolf-script./main/fling.lua"))() end) 
 Btn(p3,"Sit",10,118,function() LP.Character.Humanoid.Sit = true end)
-Btn(p3,"Head Sit",185,118,function() if Target then headsit = not headsit; noclip = headsit end end)
-Btn(p3,"Rejoin",95,154,function() TeleportService:Teleport(game.PlaceId, LP) end)
 
+Btn(p3,"Head Sit",185,118,function() 
+    if not Target then return end
+    headsit = not headsit
+    noclip = headsit
+    if not headsit then
+        local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+        if hum and hrp then
+            hum.Sit = false
+            task.wait(0.05)
+            hrp.Velocity = Vector3.new(0, 60, 0)
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+Btn(p3,"Rejoin",95,154,function() TeleportService:Teleport(game.PlaceId, LP) end)
