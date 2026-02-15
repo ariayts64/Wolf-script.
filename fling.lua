@@ -12,7 +12,7 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 380) -- کمی ارتفاع بیشتر برای سرچ بار
+MainFrame.Size = UDim2.new(0, 300, 0, 380) -- 
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
