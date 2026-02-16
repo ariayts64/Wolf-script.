@@ -1,214 +1,96 @@
--- WolfGod ULTRA UI
--- Creator: WolfGod
-
+-- [[ WolfGod ULTRA UI + Final Organized ]] --
 repeat task.wait() until game:IsLoaded()
+local Players, UIS, RunService, TeleportService = game:GetService("Players"), game:GetService("UserInputService"), game:GetService("RunService"), game:GetService("TeleportService")
+local LP, Cam = Players.LocalPlayer, workspace.CurrentCamera
 
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local TeleportService = game:GetService("TeleportService")
+-- GUI Setup (Main Frame & WG Button)
+local gui = Instance.new("ScreenGui", LP:WaitForChild("PlayerGui")); gui.Name = "WolfGod_ULTRA_UI"; gui.ResetOnSpawn = false
+local main = Instance.new("Frame", gui); main.Size = UDim2.new(0,340,0,320); main.Position = UDim2.new(0.5,0,0.5,0); main.AnchorPoint = Vector2.new(0.5,0.5); main.BackgroundColor3 = Color3.fromRGB(12,12,12); main.BorderSizePixel = 0; main.Visible = false; main.Active = true; main.Draggable = true; Instance.new("UICorner", main)
+local float = Instance.new("TextButton", gui); float.Size = UDim2.new(0,32,0,32); float.Position = UDim2.new(0,10,0.5,-16); float.Text = "WG"; float.Font = Enum.Font.GothamBold; float.TextSize = 11; float.TextColor3 = Color3.new(1,1,1); float.BackgroundColor3 = Color3.fromRGB(25,25,25); Instance.new("UICorner", float).CornerRadius = UDim.new(1,0)
+float.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
 
-local LP = Players.LocalPlayer
-local Cam = workspace.CurrentCamera
+-- Title & Credits (RGB Effect)
+local title = Instance.new("TextLabel", main); title.Size = UDim2.new(1,-20,0,28); title.Position = UDim2.new(0,10,0,6); title.Text = "WolfGod"; title.Font = Enum.Font.GothamBold; title.TextSize = 15; title.BackgroundTransparency = 1
+local credit = Instance.new("TextLabel", main); credit.Size = UDim2.new(1,0,0,18); credit.Position = UDim2.new(0,0,1,-20); credit.Text = "Creator: WolfGod"; credit.Font = Enum.Font.GothamBold; credit.TextSize = 11; credit.BackgroundTransparency = 1
+task.spawn(function() local h=0 while true do h=(h+1)%360; local c=Color3.fromHSV(h/360,1,1); title.TextColor3=c; credit.TextColor3=c; task.wait(0.03) end end)
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "WolfGod_ULTRA_UI"
-gui.ResetOnSpawn = false
-gui.Parent = LP:WaitForChild("PlayerGui")
-
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0,340,0,320)
-main.Position = UDim2.new(0.5,0,0.5,0)
-main.AnchorPoint = Vector2.new(0.5,0.5)
-main.BackgroundColor3 = Color3.fromRGB(12,12,12)
-main.BorderSizePixel = 0
-main.Visible = false
-main.Active = true
-main.Draggable = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
-
-local float = Instance.new("TextButton", gui)
-float.Size = UDim2.new(0,32,0,32)
-float.Position = UDim2.new(0,10,0.5,-16)
-float.Text = "WG"
-float.Font = Enum.Font.GothamBold
-float.TextSize = 11
-float.TextColor3 = Color3.new(1,1,1)
-float.BackgroundColor3 = Color3.fromRGB(25,25,25)
-float.BorderSizePixel = 0
-Instance.new("UICorner", float).CornerRadius = UDim.new(1,0)
-
-float.MouseButton1Click:Connect(function()
-	main.Visible = not main.Visible
-end)
-
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1,-20,0,28)
-title.Position = UDim2.new(0,10,0,6)
-title.Text = "WolfGod"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 15
-title.BackgroundTransparency = 1
-
-local credit = Instance.new("TextLabel", main)
-credit.Size = UDim2.new(1,0,0,18)
-credit.Position = UDim2.new(0,0,1,-20)
-credit.Text = "Creator: WolfGod"
-credit.Font = Enum.Font.GothamBold
-credit.TextSize = 11
-credit.BackgroundTransparency = 1
-
-task.spawn(function()
-	local h=0
-	while true do
-		h=(h+1)%360
-		local c=Color3.fromHSV(h/360,1,1)
-		title.TextColor3=c
-		credit.TextColor3=c
-		task.wait(0.03)
-	end
-end)
-
-local pages = Instance.new("Frame", main)
-pages.Size = UDim2.new(1,-20,1,-100)
-pages.Position = UDim2.new(0,10,0,70)
-pages.BackgroundTransparency = 1
-
-local p1 = Instance.new("Frame", pages); p1.Size = UDim2.new(1,0,1,0); p1.BackgroundTransparency = 1; p1.Visible = true
-local p2 = Instance.new("Frame", pages); p2.Size = UDim2.new(1,0,1,0); p2.BackgroundTransparency = 1; p2.Visible = false
-local p3 = Instance.new("Frame", pages); p3.Size = UDim2.new(1,0,1,0); p3.BackgroundTransparency = 1; p3.Visible = false
-
-local function Switch(page)
-    p1.Visible = false; p2.Visible = false; p3.Visible = false; page.Visible = true
+-- Tab System Logic
+local pages = Instance.new("Frame", main); pages.Size = UDim2.new(1,-20,1,-100); pages.Position = UDim2.new(0,10,0,70); pages.BackgroundTransparency = 1
+local p1, p2, p3 = Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages)
+for _, p in pairs({p1, p2, p3}) do p.Size = UDim2.new(1,0,1,0); p.BackgroundTransparency = 1; p.Visible = false end; p1.Visible = true
+local function NewTab(name, x, target)
+    local b = Instance.new("TextButton", main); b.Size = UDim2.new(0,100,0,26); b.Position = UDim2.new(0,x,0,38); b.Text = name; b.Font = Enum.Font.GothamBold; b.TextSize = 11; b.TextColor3 = Color3.new(1,1,1); b.BackgroundColor3 = Color3.fromRGB(20,20,20); Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() p1.Visible=false; p2.Visible=false; p3.Visible=false; target.Visible=true end)
 end
-
-local function NewTab(name, x, targetPage)
-	local b = Instance.new("TextButton", main)
-	b.Size = UDim2.new(0,100,0,26); b.Position = UDim2.new(0,x,0,38); b.Text = name
-	b.Font = Enum.Font.GothamBold; b.TextSize = 11; b.TextColor3 = Color3.new(1,1,1)
-	b.BackgroundColor3 = Color3.fromRGB(20,20,20); b.BorderSizePixel = 0
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
-    b.MouseButton1Click:Connect(function() Switch(targetPage) end)
-end
-
-NewTab("PLAYER", 10, p1)
-NewTab("TARGET", 120, p2)
-NewTab("UTILITY", 230, p3)
-
+NewTab("PLAYER", 10, p1); NewTab("TARGET", 120, p2); NewTab("UTILITY", 230, p3)
 local function Btn(par, txt, x, y, func)
-	local b = Instance.new("TextButton", par)
-	b.Size = UDim2.new(0,145,0,28); b.Position = UDim2.new(0,x,0,y); b.Text = txt
-	b.Font = Enum.Font.GothamBold; b.TextSize = 11; b.TextColor3 = Color3.new(1,1,1)
-	b.BackgroundColor3 = Color3.fromRGB(22,22,22); b.BorderSizePixel = 0
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
-	b.MouseButton1Click:Connect(func)
-	return b
+    local b = Instance.new("TextButton", par); b.Size = UDim2.new(0,145,0,28); b.Position = UDim2.new(0,x,0,y); b.Text = txt; b.Font = Enum.Font.GothamBold; b.TextSize = 11; b.TextColor3 = Color3.new(1,1,1); b.BackgroundColor3 = Color3.fromRGB(22,22,22); Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() func(b) end); return b
 end
 
+-- [[ PLAYER PAGE FUNCTIONS ]] --
 Btn(p1,"Speed +",10,10,function() LP.Character.Humanoid.WalkSpeed+=5 end)
 Btn(p1,"Speed -",185,10,function() LP.Character.Humanoid.WalkSpeed-=5 end)
 Btn(p1,"Jump +",10,46,function() LP.Character.Humanoid.JumpPower+=10 end)
 Btn(p1,"Jump -",185,46,function() LP.Character.Humanoid.JumpPower-=10 end)
 Btn(p1,"Reset",10,82,function() LP.Character:BreakJoints() end)
 
-local flying = false
-local flySpeed = 50
-local flyConn
-
+-- Fly System Code
+local flying, flySpeed, flyConn = false, 50, nil
 local flyBtn = Btn(p1, "Fly: OFF", 185, 82, function() end)
-local speedInput = Instance.new("TextBox", p1)
-speedInput.Size = UDim2.new(0, 145, 0, 28); speedInput.Position = UDim2.new(0, 185, 0, 118)
-speedInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); speedInput.Text = "50"
-speedInput.TextColor3 = Color3.new(1, 1, 1); speedInput.Font = Enum.Font.Gotham; speedInput.TextSize = 11
-speedInput.PlaceholderText = "Fly Speed..."
-Instance.new("UICorner", speedInput).CornerRadius = UDim.new(0, 6)
-speedInput.FocusLost:Connect(function() flySpeed = tonumber(speedInput.Text) or 50 end)
-
+local speedInp = Instance.new("TextBox", p1); speedInp.Size = UDim2.new(0,145,0,28); speedInp.Position = UDim2.new(0,185,0,118); speedInp.BackgroundColor3 = Color3.fromRGB(25,25,25); speedInp.Text = "50"; speedInp.TextColor3 = Color3.new(1,1,1); speedInp.PlaceholderText = "Fly Speed..."; Instance.new("UICorner", speedInp)
+speedInp.FocusLost:Connect(function() flySpeed = tonumber(speedInp.Text) or 50 end)
 flyBtn.MouseButton1Click:Connect(function()
-    flying = not flying
-    local char = LP.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    flying = not flying; flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"
+    local char = LP.Character or LP.CharacterAdded:Wait()
+    local hrp, hum = char:WaitForChild("HumanoidRootPart"), char:WaitForChild("Humanoid")
     if flying then
-        flyBtn.Text = "Fly: ON"
-        local bv = Instance.new("BodyVelocity", hrp); bv.Name = "FlyVel"; bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-        local bg = Instance.new("BodyGyro", hrp); bg.Name = "FlyGyro"; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.P = 9e4
+        local bv, bg = Instance.new("BodyVelocity", hrp), Instance.new("BodyGyro", hrp)
+        bv.Name, bg.Name, bv.MaxForce, bg.MaxTorque = "FlyVel", "FlyGyro", Vector3.new(9e9,9e9,9e9), Vector3.new(9e9,9e9,9e9)
         flyConn = RunService.RenderStepped:Connect(function()
-            local dir = Vector3.zero; local camCF = Cam.CFrame
-            if UIS:IsKeyDown(Enum.KeyCode.W) then dir += camCF.LookVector end
-            if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= camCF.LookVector end
-            if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= camCF.RightVector end
-            if UIS:IsKeyDown(Enum.KeyCode.D) then dir += camCF.RightVector end
-            if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0, 1, 0) end
-            if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.new(0, 1, 0) end
-            bv.Velocity = dir * flySpeed; bg.CFrame = camCF; hum.PlatformStand = true
+            local dir = Vector3.new(0,0,0); local cf = Cam.CFrame
+            if UIS:IsKeyDown("W") then dir += cf.LookVector end if UIS:IsKeyDown("S") then dir -= cf.LookVector end
+            if UIS:IsKeyDown("A") then dir -= cf.RightVector end if UIS:IsKeyDown("D") then dir += cf.RightVector end
+            if UIS:IsKeyDown("Space") then dir += Vector3.new(0,1,0) end if UIS:IsKeyDown("LeftControl") then dir -= Vector3.new(0,1,0) end
+            bv.Velocity = dir * flySpeed; bg.CFrame = cf; hum.PlatformStand = true
         end)
     else
-        flyBtn.Text = "Fly: OFF"
-        if flyConn then flyConn:Disconnect() end
-        if hrp and hrp:FindFirstChild("FlyVel") then hrp.FlyVel:Destroy() end
-        if hrp and hrp:FindFirstChild("FlyGyro") then hrp.FlyGyro:Destroy() end
-        if hum then hum.PlatformStand = false end
+        if flyConn then flyConn:Disconnect() end hum.PlatformStand = false
+        if hrp:FindFirstChild("FlyVel") then hrp.FlyVel:Destroy() end if hrp:FindFirstChild("FlyGyro") then hrp.FlyGyro:Destroy() end
     end
 end)
 
-local search = Instance.new("TextBox", p2)
-search.Size = UDim2.new(1, -4, 0, 26); search.Position = UDim2.new(0, 2, 0, 0)
-search.PlaceholderText = "Search Name or DisplayName..."; search.TextColor3 = Color3.new(1, 1, 1)
-search.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Instance.new("UICorner", search).CornerRadius = UDim.new(0, 6)
-
-local scroll = Instance.new("ScrollingFrame", p2)
-scroll.Position = UDim2.new(0, 0, 0, 30); scroll.Size = UDim2.new(1, 0, 1, -30)
-scroll.BackgroundTransparency = 1; scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 4)
-
+-- [[ TARGET PAGE & SEARCH SYSTEM ]] --
 local Target = nil
-local function RefreshList()
-    for _, v in ipairs(scroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LP then
-            local b = Instance.new("TextButton", scroll)
-            b.Size = UDim2.new(1, -6, 0, 26); b.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"; b.Name = plr.Name
-            b.TextColor3 = Color3.new(1, 1, 1); b.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-            b.MouseButton1Click:Connect(function() Target = plr; title.Text = "TARGET: " .. plr.DisplayName end)
-        end
-    end
+local search = Instance.new("TextBox", p2); search.Size = UDim2.new(1,-4,0,26); search.PlaceholderText = "Search Name/Nickname..."; search.BackgroundColor3 = Color3.fromRGB(25,25,25); Instance.new("UICorner", search)
+local scroll = Instance.new("ScrollingFrame", p2); scroll.Position = UDim2.new(0,0,0,30); scroll.Size = UDim2.new(1,0,1,-30); scroll.BackgroundTransparency = 1; scroll.AutomaticCanvasSize = "Y"; Instance.new("UIListLayout", scroll).Padding = UDim.new(0,4)
+local function Refresh()
+    for _, v in pairs(scroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    for _, plr in pairs(Players:GetPlayers()) do if plr ~= LP then
+        local b = Instance.new("TextButton", scroll); b.Size = UDim2.new(1,-6,0,26); b.Text = plr.DisplayName.." (@"..plr.Name..")"; b.Name = plr.Name; b.BackgroundColor3 = Color3.fromRGB(25,25,25); b.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", b)
+        b.MouseButton1Click:Connect(function() Target = plr; title.Text = "TARGET: "..plr.DisplayName end)
+    end end
 end
-RefreshList()
-Players.PlayerAdded:Connect(RefreshList); Players.PlayerRemoving:Connect(RefreshList)
-
+Refresh(); Players.PlayerAdded:Connect(Refresh); Players.PlayerRemoving:Connect(Refresh)
 search:GetPropertyChangedSignal("Text"):Connect(function()
     local t = search.Text:lower()
-    for _, v in ipairs(scroll:GetChildren()) do
-        if v:IsA("TextButton") then
-            local plr = Players:FindFirstChild(v.Name)
-            if plr then
-                if plr.Name:lower():find(t) or plr.DisplayName:lower():find(t) then
-                    v.Visible = true
-                else
-                    v.Visible = false
-                end
-            end
-        end
-    end
+    for _, v in pairs(scroll:GetChildren()) do if v:IsA("TextButton") then local p = Players:FindFirstChild(v.Name); v.Visible = p and (p.Name:lower():find(t) or p.DisplayName:lower():find(t)) end end
 end)
 
-local noclip = false; local headsit = false; local infJump = false
-UIS.JumpRequest:Connect(function() if infJump and LP.Character then LP.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end)
+-- [[ UTILITY PAGE FUNCTIONS ]] --
+local noclip, headsit, infJump, lookAt = false, false, false, false
+UIS.JumpRequest:Connect(function() if infJump and LP.Character then LP.Character.Humanoid:ChangeState("Jumping") end end)
 
 RunService.Stepped:Connect(function()
-    if LP.Character then
-        if noclip then for _,v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide=false end end end
-        if headsit and Target and Target.Character and Target.Character:FindFirstChild("Head") then
-            local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then 
-                hrp.CFrame = Target.Character.Head.CFrame * CFrame.new(0, 1.2, 0)
-                hrp.Velocity = Vector3.zero
-                hrp.RotVelocity = Vector3.zero
-                LP.Character.Humanoid.Sit = true 
-            end
-        end
+    if not LP.Character then return end
+    if noclip then for _, v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end
+    if headsit and Target and Target.Character and Target.Character:FindFirstChild("Head") then
+        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.CFrame = Target.Character.Head.CFrame * CFrame.new(0,1.2,0); hrp.Velocity = Vector3.zero; LP.Character.Humanoid.Sit = true end
+    end
+    if lookAt and Target and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then local p = Target.Character.HumanoidRootPart.Position; hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(p.X, hrp.Position.Y, p.Z)) end
     end
 end)
 
@@ -217,23 +99,19 @@ Btn(p3,"UnSpectate",185,10,function() Cam.CameraSubject=LP.Character.Humanoid en
 Btn(p3,"Noclip",10,46,function() noclip = not noclip end)
 Btn(p3,"Teleport",185,46,function() if Target and Target.Character then LP.Character.HumanoidRootPart.CFrame = Target.Character.HumanoidRootPart.CFrame end end)
 Btn(p3,"Infinite Jump",10,82,function() infJump = not infJump end)
-Btn(p3,"Fling",185,82,function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ariayts64/Wolf-script./main/fling.lua"))() end) 
+Btn(p3,"Fling",185,82,function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ariayts64/Wolf-script./main/fling.lua"))() end)
 Btn(p3,"Sit",10,118,function() LP.Character.Humanoid.Sit = true end)
 
-Btn(p3,"Head Sit",185,118,function() 
-    if not Target then return end
-    headsit = not headsit
-    noclip = headsit
-    if not headsit then
-        local hum = LP.Character:FindFirstChildOfClass("Humanoid")
-        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
-        if hum and hrp then
-            hum.Sit = false
-            task.wait(0.05)
-            hrp.Velocity = Vector3.new(0, 60, 0)
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
+-- Head Sit Function
+Btn(p3,"Head Sit",185,118,function()
+    if not Target then return end headsit = not headsit; noclip = headsit
+    if not headsit then local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.Sit = false; task.wait(0.05); LP.Character.HumanoidRootPart.Velocity = Vector3.new(0,60,0); hum:ChangeState("Jumping") end
     end
 end)
 
-Btn(p3,"Rejoin",95,154,function() TeleportService:Teleport(game.PlaceId, LP) end)
+-- Look At Target Function
+Btn(p3,"Look At Target",10,154,function(b) if Target then lookAt = not lookAt; b.Text = lookAt and "Look At: ON" or "Look At Target" end end)
+
+-- Rejoin Code
+Btn(p3,"Rejoin",185,154,function() TeleportService:Teleport(game.PlaceId, LP) end)
