@@ -1,44 +1,42 @@
--- [[ WolfGod ULTRA UI + Final Organized ]] --
+-- [[ WolfGod ULTRA UI - Final Updated ]] --
 repeat task.wait() until game:IsLoaded()
 local Players, UIS, RunService, TeleportService = game:GetService("Players"), game:GetService("UserInputService"), game:GetService("RunService"), game:GetService("TeleportService")
 local LP, Cam = Players.LocalPlayer, workspace.CurrentCamera
 
--- GUI Setup (Main Frame & WG Button)
+-- GUI Setup
 local gui = Instance.new("ScreenGui", LP:WaitForChild("PlayerGui")); gui.Name = "WolfGod_ULTRA_UI"; gui.ResetOnSpawn = false
 local main = Instance.new("Frame", gui); main.Size = UDim2.new(0,340,0,320); main.Position = UDim2.new(0.5,0,0.5,0); main.AnchorPoint = Vector2.new(0.5,0.5); main.BackgroundColor3 = Color3.fromRGB(12,12,12); main.BorderSizePixel = 0; main.Visible = false; main.Active = true; main.Draggable = true; Instance.new("UICorner", main)
 local float = Instance.new("TextButton", gui); float.Size = UDim2.new(0,32,0,32); float.Position = UDim2.new(0,10,0.5,-16); float.Text = "WG"; float.Font = Enum.Font.GothamBold; float.TextSize = 11; float.TextColor3 = Color3.new(1,1,1); float.BackgroundColor3 = Color3.fromRGB(25,25,25); Instance.new("UICorner", float).CornerRadius = UDim.new(1,0)
 float.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
 
--- Title & Credits (RGB Effect)
+-- RGB Titles
 local title = Instance.new("TextLabel", main); title.Size = UDim2.new(1,-20,0,28); title.Position = UDim2.new(0,10,0,6); title.Text = "WolfGod"; title.Font = Enum.Font.GothamBold; title.TextSize = 15; title.BackgroundTransparency = 1
 local credit = Instance.new("TextLabel", main); credit.Size = UDim2.new(1,0,0,18); credit.Position = UDim2.new(0,0,1,-20); credit.Text = "Creator: WolfGod"; credit.Font = Enum.Font.GothamBold; credit.TextSize = 11; credit.BackgroundTransparency = 1
 task.spawn(function() local h=0 while true do h=(h+1)%360; local c=Color3.fromHSV(h/360,1,1); title.TextColor3=c; credit.TextColor3=c; task.wait(0.03) end end)
 
 -- Tab System Logic
 local pages = Instance.new("Frame", main); pages.Size = UDim2.new(1,-20,1,-100); pages.Position = UDim2.new(0,10,0,70); pages.BackgroundTransparency = 1
-local p1, p2, p3 = Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages)
-for _, p in pairs({p1, p2, p3}) do p.Size = UDim2.new(1,0,1,0); p.BackgroundTransparency = 1; p.Visible = false end; p1.Visible = true
-local function NewTab(name, x, target)
-    local b = Instance.new("TextButton", main); b.Size = UDim2.new(0,100,0,26); b.Position = UDim2.new(0,x,0,38); b.Text = name; b.Font = Enum.Font.GothamBold; b.TextSize = 11; b.TextColor3 = Color3.new(1,1,1); b.BackgroundColor3 = Color3.fromRGB(20,20,20); Instance.new("UICorner", b)
-    b.MouseButton1Click:Connect(function() p1.Visible=false; p2.Visible=false; p3.Visible=false; target.Visible=true end)
+local p1, p2, p3, p4 = Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages)
+for _, p in pairs({p1, p2, p3, p4}) do p.Size = UDim2.new(1,0,1,0); p.BackgroundTransparency = 1; p.Visible = false end; p1.Visible = true
+local function NewTab(name, x, target, width)
+    local b = Instance.new("TextButton", main); b.Size = UDim2.new(0,width or 75,0,26); b.Position = UDim2.new(0,x,0,38); b.Text = name; b.Font = Enum.Font.GothamBold; b.TextSize = 10; b.TextColor3 = Color3.new(1,1,1); b.BackgroundColor3 = Color3.fromRGB(20,20,20); Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() p1.Visible=false; p2.Visible=false; p3.Visible=false; p4.Visible=false; target.Visible=true end)
 end
-NewTab("PLAYER", 10, p1); NewTab("TARGET", 120, p2); NewTab("UTILITY", 230, p3)
+NewTab("PLAYER", 10, p1, 75); NewTab("TARGET", 90, p2, 75); NewTab("UTILITY", 170, p3, 75); NewTab("TROLL", 250, p4, 80)
 local function Btn(par, txt, x, y, func)
     local b = Instance.new("TextButton", par); b.Size = UDim2.new(0,145,0,28); b.Position = UDim2.new(0,x,0,y); b.Text = txt; b.Font = Enum.Font.GothamBold; b.TextSize = 11; b.TextColor3 = Color3.new(1,1,1); b.BackgroundColor3 = Color3.fromRGB(22,22,22); Instance.new("UICorner", b)
     b.MouseButton1Click:Connect(function() func(b) end); return b
 end
 
--- [[ PLAYER PAGE FUNCTIONS ]] --
+-- [[ PLAYER PAGE ]] --
 Btn(p1,"Speed +",10,10,function() LP.Character.Humanoid.WalkSpeed+=5 end)
 Btn(p1,"Speed -",185,10,function() LP.Character.Humanoid.WalkSpeed-=5 end)
-Btn(p1,"Jump +",10,46,function() LP.Character.Humanoid.JumpPower+=10 end)
-Btn(p1,"Jump -",185,46,function() LP.Character.Humanoid.JumpPower-=10 end)
-Btn(p1,"Reset",10,82,function() LP.Character:BreakJoints() end)
+Btn(p1,"Reset",10,46,function() LP.Character:BreakJoints() end)
+Btn(p1,"Sit",185,46,function() if LP.Character then LP.Character.Humanoid.Sit = true end end)
 
--- Fly System Code
 local flying, flySpeed, flyConn = false, 50, nil
-local flyBtn = Btn(p1, "Fly: OFF", 185, 82, function() end)
-local speedInp = Instance.new("TextBox", p1); speedInp.Size = UDim2.new(0,145,0,28); speedInp.Position = UDim2.new(0,185,0,118); speedInp.BackgroundColor3 = Color3.fromRGB(25,25,25); speedInp.Text = "50"; speedInp.TextColor3 = Color3.new(1,1,1); speedInp.PlaceholderText = "Fly Speed..."; Instance.new("UICorner", speedInp)
+local flyBtn = Btn(p1, "Fly: OFF", 10, 82, function() end)
+local speedInp = Instance.new("TextBox", p1); speedInp.Size = UDim2.new(0,145,0,28); speedInp.Position = UDim2.new(0,185,0,82); speedInp.BackgroundColor3 = Color3.fromRGB(25,25,25); speedInp.Text = "50"; speedInp.TextColor3 = Color3.new(1,1,1); speedInp.PlaceholderText = "Fly Speed..."; Instance.new("UICorner", speedInp)
 speedInp.FocusLost:Connect(function() flySpeed = tonumber(speedInp.Text) or 50 end)
 flyBtn.MouseButton1Click:Connect(function()
     flying = not flying; flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"
@@ -60,7 +58,11 @@ flyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- [[ TARGET PAGE & SEARCH SYSTEM ]] --
+-- Rejoin Server added to bottom of PLAYER Tab
+local rj = Btn(p1, "Rejoin Server", 10, 118, function() TeleportService:Teleport(game.PlaceId, LP) end)
+rj.Size = UDim2.new(0, 320, 0, 28)
+
+-- [[ TARGET PAGE ]] --
 local Target = nil
 local search = Instance.new("TextBox", p2); search.Size = UDim2.new(1,-4,0,26); search.PlaceholderText = "Search Name/Nickname..."; search.BackgroundColor3 = Color3.fromRGB(25,25,25); Instance.new("UICorner", search)
 local scroll = Instance.new("ScrollingFrame", p2); scroll.Position = UDim2.new(0,0,0,30); scroll.Size = UDim2.new(1,0,1,-30); scroll.BackgroundTransparency = 1; scroll.AutomaticCanvasSize = "Y"; Instance.new("UIListLayout", scroll).Padding = UDim.new(0,4)
@@ -77,10 +79,9 @@ search:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(scroll:GetChildren()) do if v:IsA("TextButton") then local p = Players:FindFirstChild(v.Name); v.Visible = p and (p.Name:lower():find(t) or p.DisplayName:lower():find(t)) end end
 end)
 
--- [[ UTILITY PAGE FUNCTIONS ]] --
+-- [[ UTILITY PAGE ]] --
 local noclip, headsit, infJump, lookAt = false, false, false, false
 UIS.JumpRequest:Connect(function() if infJump and LP.Character then LP.Character.Humanoid:ChangeState("Jumping") end end)
-
 RunService.Stepped:Connect(function()
     if not LP.Character then return end
     if noclip then for _, v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end
@@ -93,25 +94,18 @@ RunService.Stepped:Connect(function()
         if hrp then local p = Target.Character.HumanoidRootPart.Position; hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(p.X, hrp.Position.Y, p.Z)) end
     end
 end)
-
 Btn(p3,"Spectate",10,10,function() if Target and Target.Character then Cam.CameraSubject=Target.Character.Humanoid end end)
 Btn(p3,"UnSpectate",185,10,function() Cam.CameraSubject=LP.Character.Humanoid end)
 Btn(p3,"Noclip",10,46,function() noclip = not noclip end)
 Btn(p3,"Teleport",185,46,function() if Target and Target.Character then LP.Character.HumanoidRootPart.CFrame = Target.Character.HumanoidRootPart.CFrame end end)
 Btn(p3,"Infinite Jump",10,82,function() infJump = not infJump end)
-Btn(p3,"Fling",185,82,function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ariayts64/Wolf-script./main/fling.lua"))() end)
-Btn(p3,"Sit",10,118,function() LP.Character.Humanoid.Sit = true end)
-
--- Head Sit Function
-Btn(p3,"Head Sit",185,118,function()
+Btn(p3,"Head Sit",185,82,function()
     if not Target then return end headsit = not headsit; noclip = headsit
     if not headsit then local hum = LP.Character:FindFirstChildOfClass("Humanoid")
         if hum then hum.Sit = false; task.wait(0.05); LP.Character.HumanoidRootPart.Velocity = Vector3.new(0,60,0); hum:ChangeState("Jumping") end
     end
 end)
 
--- Look At Target Function
-Btn(p3,"Look At Target",10,154,function(b) if Target then lookAt = not lookAt; b.Text = lookAt and "Look At: ON" or "Look At Target" end end)
-
--- Rejoin Code
-Btn(p3,"Rejoin",185,154,function() TeleportService:Teleport(game.PlaceId, LP) end)
+-- [[ TROLL PAGE ]] --
+Btn(p4,"Fling",10,10,function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ariayts64/Wolf-script./main/fling.lua"))() end)
+Btn(p4,"Look At Target",185,10,function(b) if Target then lookAt = not lookAt; b.Text = lookAt and "Look At: ON" or "Look At Target" end end)
