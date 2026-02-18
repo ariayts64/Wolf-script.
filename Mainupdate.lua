@@ -1,4 +1,4 @@
--- [[ WolfGod ULTRA UI - 
+-- [ WolfGod ULTRA UI --
 repeat task.wait() until game:IsLoaded()
 local Players, UIS, RunService, TeleportService, TCS = game:GetService("Players"), game:GetService("UserInputService"), game:GetService("RunService"), game:GetService("TeleportService"), game:GetService("TextChatService")
 local LP, Cam = Players.LocalPlayer, workspace.CurrentCamera
@@ -105,8 +105,10 @@ UIS.JumpRequest:Connect(function() if infJump and LP.Character then LP.Character
 RunService.Stepped:Connect(function()
     if not LP.Character then return end
     if noclip then for _, v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end
+    -- [[ UPDATED HEAD SIT LOGIC ]] --
     if headsit and Target and Target.Character and Target.Character:FindFirstChild("Head") then
-        LP.Character.HumanoidRootPart.CFrame = Target.Character.Head.CFrame * CFrame.new(0,1.2,0); LP.Character.Humanoid.Sit = true
+        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.CFrame = Target.Character.Head.CFrame * CFrame.new(0,1.2,0); hrp.Velocity = Vector3.zero; LP.Character.Humanoid.Sit = true end
     end
 end)
 Btn(p3,"Spectate",10,10,function() if Target and Target.Character then Cam.CameraSubject=Target.Character.Humanoid end end)
@@ -115,11 +117,20 @@ Btn(p3,"Noclip",10,46,function() noclip = not noclip end)
 Btn(p3,"Teleport",185,46,function() if Target and Target.Character then LP.Character.HumanoidRootPart.CFrame = Target.Character.HumanoidRootPart.CFrame end end)
 Btn(p3,"Infinite Jump",10,82,function() infJump = not infJump end)
 
+-- [[ UPDATED HEAD SIT BUTTON ]] --
+Btn(p3,"Head Sit",185,82,function(b)
+    if not Target then return end headsit = not headsit; b.Text = headsit and "Head Sit: ON" or "Head Sit"
+    noclip = headsit
+    if not headsit then local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.Sit = false; task.wait(0.05); LP.Character.HumanoidRootPart.Velocity = Vector3.new(0,60,0); hum:ChangeState("Jumping") end
+    end
+end)
+
 -- Anti AFK Button (Name Fixed)
-Btn(p3,"Anti AFK: OFF",185,82,function(b) 
+Btn(p3,"Anti AFK: OFF",10,118,function(b) 
     AntiAFK_Active = not AntiAFK_Active; 
     b.Text = AntiAFK_Active and "Anti AFK: ON" or "Anti AFK: OFF" 
-end)
+end).Size = UDim2.new(0,320,0,28)
 
 task.spawn(function() 
     while true do 
