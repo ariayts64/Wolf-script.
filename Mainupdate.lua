@@ -2,6 +2,7 @@
 repeat task.wait() until game:IsLoaded()
 local Players, UIS, RunService, TeleportService, TCS = game:GetService("Players"), game:GetService("UserInputService"), game:GetService("RunService"), game:GetService("TeleportService"), game:GetService("TextChatService")
 local LP, Cam = Players.LocalPlayer, workspace.CurrentCamera
+local VirtualUser = game:GetService("VirtualUser")
 
 -- GUI Setup
 local gui = Instance.new("ScreenGui", LP:WaitForChild("PlayerGui")); gui.Name = "WolfGod_ULTRA_UI"; gui.ResetOnSpawn = false
@@ -14,7 +15,7 @@ local title = Instance.new("TextLabel", main); title.Size = UDim2.new(1,-20,0,28
 local credit = Instance.new("TextLabel", main); credit.Size = UDim2.new(1,0,0,18); credit.Position = UDim2.new(0,0,1,-20); credit.Text = "Creator: WolfGod"; credit.Font = Enum.Font.GothamBold; credit.TextSize = 11; credit.BackgroundTransparency = 1
 task.spawn(function() local h=0 while true do h=(h+1)%360; local c=Color3.fromHSV(h/360,1,1); title.TextColor3=c; credit.TextColor3=c; task.wait(0.03) end end)
 
--- Tab System (5 Tabs)
+-- Tab System
 local pages = Instance.new("Frame", main); pages.Size = UDim2.new(1,-20,1,-100); pages.Position = UDim2.new(0,10,0,70); pages.BackgroundTransparency = 1
 local p1, p2, p3, p4, p5 = Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages), Instance.new("Frame", pages)
 for _, p in pairs({p1, p2, p3, p4, p5}) do p.Size = UDim2.new(1,0,1,0); p.BackgroundTransparency = 1; p.Visible = false end; p1.Visible = true
@@ -52,30 +53,34 @@ Btn(p1,"Speed +",10,10,function() LP.Character.Humanoid.WalkSpeed+=5 end)
 Btn(p1,"Speed -",185,10,function() LP.Character.Humanoid.WalkSpeed-=5 end)
 Btn(p1,"Reset",10,46,function() LP.Character:BreakJoints() end)
 Btn(p1,"Sit",185,46,function() if LP.Character then LP.Character.Humanoid.Sit = true end end)
-local flying, flySpeed, flyConn = false, 50, nil
+
+local flying = false
+local flySpeed = 50
 local flyBtn = Btn(p1, "Fly: OFF", 10, 82, function() end)
-local speedInp = Instance.new("TextBox", p1); speedInp.Size = UDim2.new(0,145,0,28); speedInp.Position = UDim2.new(0,185,0,82); speedInp.BackgroundColor3 = Color3.fromRGB(25,25,25); speedInp.Text = "50"; speedInp.TextColor3 = Color3.new(1,1,1); speedInp.PlaceholderText = "Fly Speed..."; Instance.new("UICorner", speedInp)
+local speedInp = Instance.new("TextBox", p1); speedInp.Size = UDim2.new(0,145,0,28); speedInp.Position = UDim2.new(0,185,0,82); speedInp.BackgroundColor3 = Color3.fromRGB(25,25,25); speedInp.Text = "50"; speedInp.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", speedInp)
 speedInp.FocusLost:Connect(function() flySpeed = tonumber(speedInp.Text) or 50 end)
-flyBtn.MouseButton1Click:Connect(function()
-    flying = not flying; flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"
-    local char = LP.Character or LP.CharacterAdded:Wait()
-    local hrp, hum = char:WaitForChild("HumanoidRootPart"), char:WaitForChild("Humanoid")
-    if flying then
-        local bv, bg = Instance.new("BodyVelocity", hrp), Instance.new("BodyGyro", hrp)
-        bv.Name, bg.Name, bv.MaxForce, bg.MaxTorque = "FlyVel", "FlyGyro", Vector3.new(9e9,9e9,9e9), Vector3.new(9e9,9e9,9e9)
-        flyConn = RunService.RenderStepped:Connect(function()
-            local dir = Vector3.new(0,0,0); local cf = Cam.CFrame
-            if UIS:IsKeyDown("W") then dir += cf.LookVector end if UIS:IsKeyDown("S") then dir -= cf.LookVector end
-            if UIS:IsKeyDown("A") then dir -= cf.RightVector end if UIS:IsKeyDown("D") then dir += cf.RightVector end
-            if UIS:IsKeyDown("Space") then dir += Vector3.new(0,1,0) end if UIS:IsKeyDown("LeftControl") then dir -= Vector3.new(0,1,0) end
-            bv.Velocity = dir * flySpeed; bg.CFrame = cf; hum.PlatformStand = true
-        end)
-    else
-        if flyConn then flyConn:Disconnect() end hum.PlatformStand = false
-        if hrp:FindFirstChild("FlyVel") then hrp.FlyVel:Destroy() end if hrp:FindFirstChild("FlyGyro") then hrp.FlyGyro:Destroy() end
+
+RunService.RenderStepped:Connect(function()
+    if flying and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LP.Character.HumanoidRootPart
+        local dir = Vector3.new(0,0,0)
+        if UIS:IsKeyDown(Enum.KeyCode.W) then dir += Cam.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= Cam.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= Cam.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then dir += Cam.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0,1,0) end
+        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.new(0,1,0) end
+        hrp.Velocity = dir.Magnitude > 0 and dir.Unit * flySpeed or Vector3.new(0,0.1,0)
+        LP.Character.Humanoid.PlatformStand = true
     end
 end)
-Btn(p1, "Rejoin Server", 10, 118, function() TeleportService:Teleport(game.PlaceId, LP) end).Size = UDim2.new(0,320,0,28)
+flyBtn.MouseButton1Click:Connect(function() flying = not flying; flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"; if not flying then LP.Character.Humanoid.PlatformStand = false end end)
+
+local gravBtn = Btn(p1, "Set Gravity", 10, 118, function() end)
+local gravInp = Instance.new("TextBox", p1); gravInp.Size = UDim2.new(0,145,0,28); gravInp.Position = UDim2.new(0,185,0,118); gravInp.BackgroundColor3 = Color3.fromRGB(25,25,25); gravInp.Text = "196.2"; gravInp.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", gravInp)
+gravBtn.MouseButton1Click:Connect(function() workspace.Gravity = tonumber(gravInp.Text) or 196.2 end)
+
+Btn(p1, "Rejoin Server", 10, 154, function() TeleportService:Teleport(game.PlaceId, LP) end).Size = UDim2.new(0,320,0,28)
 
 -- [[ TARGET PAGE ]] --
 local Target = nil
@@ -95,18 +100,13 @@ search:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 -- [[ UTILITY PAGE ]] --
-local noclip, headsit, infJump, lookAt = false, false, false, false
+local noclip, headsit, infJump, AntiAFK_Active = false, false, false, false
 UIS.JumpRequest:Connect(function() if infJump and LP.Character then LP.Character.Humanoid:ChangeState("Jumping") end end)
 RunService.Stepped:Connect(function()
     if not LP.Character then return end
     if noclip then for _, v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end
     if headsit and Target and Target.Character and Target.Character:FindFirstChild("Head") then
-        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.CFrame = Target.Character.Head.CFrame * CFrame.new(0,1.2,0); hrp.Velocity = Vector3.zero; LP.Character.Humanoid.Sit = true end
-    end
-    if lookAt and Target and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then local p = Target.Character.HumanoidRootPart.Position; hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(p.X, hrp.Position.Y, p.Z)) end
+        LP.Character.HumanoidRootPart.CFrame = Target.Character.Head.CFrame * CFrame.new(0,1.2,0); LP.Character.Humanoid.Sit = true
     end
 end)
 Btn(p3,"Spectate",10,10,function() if Target and Target.Character then Cam.CameraSubject=Target.Character.Humanoid end end)
@@ -114,13 +114,40 @@ Btn(p3,"UnSpectate",185,10,function() Cam.CameraSubject=LP.Character.Humanoid en
 Btn(p3,"Noclip",10,46,function() noclip = not noclip end)
 Btn(p3,"Teleport",185,46,function() if Target and Target.Character then LP.Character.HumanoidRootPart.CFrame = Target.Character.HumanoidRootPart.CFrame end end)
 Btn(p3,"Infinite Jump",10,82,function() infJump = not infJump end)
-Btn(p3,"Head Sit",185,82,function()
-    if not Target then return end headsit = not headsit; noclip = headsit
-    if not headsit then local hum = LP.Character:FindFirstChildOfClass("Humanoid")
-        if hum then hum.Sit = false; task.wait(0.05); LP.Character.HumanoidRootPart.Velocity = Vector3.new(0,60,0); hum:ChangeState("Jumping") end
-    end
+
+-- Anti AFK Button (Name Fixed)
+Btn(p3,"Anti AFK: OFF",185,82,function(b) 
+    AntiAFK_Active = not AntiAFK_Active; 
+    b.Text = AntiAFK_Active and "Anti AFK: ON" or "Anti AFK: OFF" 
+end)
+
+task.spawn(function() 
+    while true do 
+        task.wait(300) 
+        if AntiAFK_Active then 
+            VirtualUser:CaptureController(); 
+            VirtualUser:ClickButton2(Vector2.new()); 
+            AddLog(joinSc, "Anti AFK Action Executed", Color3.new(1, 0.8, 0)) 
+        end 
+    end 
 end)
 
 -- [[ TROLL PAGE ]] --
+local lookAt = false
 Btn(p4,"Fling",10,10,function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ariayts64/Wolf-script./main/fling.lua"))() end)
 Btn(p4,"Look At Target",185,10,function(b) if Target then lookAt = not lookAt; b.Text = lookAt and "Look At: ON" or "Look At Target" end end)
+
+local orbiting = false
+Btn(p4,"Orbit Target",10,46,function(b)
+    if not Target then return end orbiting = not orbiting
+    b.Text = orbiting and "Orbit: ON" or "Orbit Target"
+    task.spawn(function() while orbiting and task.wait() do pcall(function() local p = Target.Character.HumanoidRootPart.Position; local t = tick() * 6; LP.Character.HumanoidRootPart.CFrame = CFrame.new(p + Vector3.new(math.cos(t)*7, 2, math.sin(t)*7), p) end) end end)
+end)
+
+RunService.RenderStepped:Connect(function()
+    if lookAt and Target and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LP.Character.HumanoidRootPart
+        local p = Target.Character.HumanoidRootPart.Position
+        hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(p.X, hrp.Position.Y, p.Z))
+    end
+end)
