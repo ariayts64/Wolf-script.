@@ -1,16 +1,15 @@
---[[ WolfGod fling with DisplayName Search ]]
--- Services
+--
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 
--- GUI Setup
+-- 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "WolfGod"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game:GetService("CoreGui")
 
--- Main Frame
+-- 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 300, 0, 380) 
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -190)
@@ -20,14 +19,14 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
--- Title Bar
+-- 
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
 TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MainFrame
 
--- Title
+-- 
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -30, 1, 0)
 Title.BackgroundTransparency = 1
@@ -37,7 +36,7 @@ Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 18
 Title.Parent = TitleBar
 
--- Close Button
+-- 
 local CloseButton = Instance.new("TextButton")
 CloseButton.Position = UDim2.new(1, -30, 0, 0)
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
@@ -49,7 +48,7 @@ CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.TextSize = 18
 CloseButton.Parent = TitleBar
 
--- Search Bar
+-- 
 local SearchBar = Instance.new("TextBox")
 SearchBar.Name = "SearchBar"
 SearchBar.Size = UDim2.new(1, -20, 0, 25)
@@ -63,7 +62,7 @@ SearchBar.Font = Enum.Font.SourceSans
 SearchBar.TextSize = 14
 SearchBar.Parent = MainFrame
 
--- Status Label
+-- 
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Position = UDim2.new(0, 10, 0, 70)
 StatusLabel.Size = UDim2.new(1, -20, 0, 25)
@@ -75,7 +74,7 @@ StatusLabel.TextSize = 16
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.Parent = MainFrame
 
--- Player Selection Frame
+-- 
 local SelectionFrame = Instance.new("Frame")
 SelectionFrame.Position = UDim2.new(0, 10, 0, 100)
 SelectionFrame.Size = UDim2.new(1, -20, 0, 170)
@@ -83,7 +82,7 @@ SelectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 SelectionFrame.BorderSizePixel = 0
 SelectionFrame.Parent = MainFrame
 
--- Player List ScrollFrame
+-- 
 local PlayerScrollFrame = Instance.new("ScrollingFrame")
 PlayerScrollFrame.Position = UDim2.new(0, 5, 0, 5)
 PlayerScrollFrame.Size = UDim2.new(1, -10, 1, -10)
@@ -93,7 +92,7 @@ PlayerScrollFrame.ScrollBarThickness = 6
 PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 PlayerScrollFrame.Parent = SelectionFrame
 
--- Buttons
+-- 
 local StartButton = Instance.new("TextButton")
 StartButton.Position = UDim2.new(0, 10, 0, 280)
 StartButton.Size = UDim2.new(0.5, -15, 0, 40)
@@ -130,7 +129,7 @@ DeselectAllButton.Text = "DESELECT ALL"
 DeselectAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 DeselectAllButton.Parent = MainFrame
 
--- Variables
+-- 
 local SelectedTargets = {}
 local FlingActive = false
 getgenv().OldPos = nil
@@ -153,7 +152,7 @@ local function UpdateStatus()
     end
 end
 
--- Refresh Player List with DisplayName Search Support
+-- 
 local function RefreshPlayerList()
     for _, child in pairs(PlayerScrollFrame:GetChildren()) do
         child:Destroy()
@@ -165,7 +164,7 @@ local function RefreshPlayerList()
 
     local yPosition = 5
     for _, player in ipairs(PlayerList) do
-        -- Check both Name and DisplayName
+        -- 
         local nameMatch = player.Name:lower():find(searchText)
         local displayMatch = player.DisplayName:lower():find(searchText)
 
